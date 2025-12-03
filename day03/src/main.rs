@@ -45,11 +45,9 @@ fn part2(input: &[InputEnt]) -> u64 {
     input
         .iter()
         .map(|bank| {
-            let mut pos = 0;
-
             // Get 12 digits
-            let digits = (0..12)
-                .map(|digit| {
+            (0..12)
+                .fold((0, 0), |(pos, sum), digit| {
                     // Get highest digit from remaining digits, leaving enough for later iterations
                     let (new_pos, d) = bank
                         .iter()
@@ -65,20 +63,13 @@ fn part2(input: &[InputEnt]) -> u64 {
                             },
                         );
 
-                    // Move to next start position
-                    pos = new_pos + 1;
-
-                    d
+                    // Return new position and sum
+                    (
+                        new_pos + 1,
+                        sum + (d as u64 * 10u64.pow((11 - digit) as u32)),
+                    )
                 })
-                .collect::<Vec<_>>();
-
-            // Build number
-            digits
-                .into_iter()
-                .rev()
-                .enumerate()
-                .map(|(i, digit)| digit as u64 * 10u64.pow(i as u32))
-                .sum::<u64>()
+                .1
         })
         .sum()
 }
