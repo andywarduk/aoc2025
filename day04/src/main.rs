@@ -19,7 +19,7 @@ fn part1(input: &[InputEnt]) -> u64 {
         .enumerate()
         .map(|(y, row)| {
             row.iter().enumerate().fold(0, |acc, (x, state)| {
-                if *state == State::Paper && adjacent(input, x, y) < 4 {
+                if *state == State::Paper && adjacent_count(input, x, y) < 4 {
                     acc + 1
                 } else {
                     acc
@@ -40,7 +40,7 @@ fn part2(input: &[InputEnt]) -> u64 {
 
         for y in 0..h {
             for x in 0..w {
-                if board[y][x] == State::Paper && adjacent(&board, x, y) < 4 {
+                if board[y][x] == State::Paper && adjacent_count(&board, x, y) < 4 {
                     board[y][x] = State::Empty;
                     this_removed += 1;
                 }
@@ -57,33 +57,28 @@ fn part2(input: &[InputEnt]) -> u64 {
     removed
 }
 
-fn adjacent(input: &[InputEnt], x: usize, y: usize) -> u64 {
-    let mut result = 0;
-
-    for (x, y) in adjacent_coords(input, x, y) {
-        if input[y][x] == State::Paper {
-            result += 1;
-        }
-    }
-
-    result
+fn adjacent_count(input: &[InputEnt], x: usize, y: usize) -> usize {
+    adjacent_coords(input, x, y)
+        .filter(|&(x, y)| input[y][x] == State::Paper)
+        .count()
 }
 
-fn adjacent_coords(input: &[InputEnt], x: usize, y: usize) -> Vec<(usize, usize)> {
-    let mut result = Vec::with_capacity(8);
+fn adjacent_coords(input: &[InputEnt], x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
+    let x = x as isize;
+    let y = y as isize;
 
     let w = input[0].len() as isize;
     let h = input.len() as isize;
 
-    for ty in ((y as isize) - 1)..=((y as isize) + 1) {
-        for tx in ((x as isize) - 1)..=((x as isize) + 1) {
-            if ty >= 0 && ty < h && tx >= 0 && tx < w && !(tx == x as isize && ty == y as isize) {
-                result.push((tx as usize, ty as usize));
+    ((y - 1)..=(y + 1)).flat_map(move |ty| {
+        ((x - 1)..=(x + 1)).filter_map(move |tx| {
+            if ty >= 0 && ty < h && tx >= 0 && tx < w && !(tx == x && ty == y) {
+                Some((tx as usize, ty as usize))
+            } else {
+                None
             }
-        }
-    }
-
-    result
+        })
+    })
 }
 
 // Input parsing
