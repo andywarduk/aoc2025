@@ -1,0 +1,35 @@
+31
+63
+95
+127
+159
+191
+223
+255
+        5.62 real         5.11 user         0.09 sys
+             4456448  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+                 424  page reclaims
+                   0  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                   1  voluntary context switches
+                2976  involuntary context switches
+        100701671341  instructions retired
+         17690042162  cycles elapsed
+             3998032  peak memory footprint
+------------------------------------------
+Darwin 25.0.0 Darwin Kernel Version 25.0.0: Wed Sep 17 21:38:03 PDT 2025; root:xnu-12377.1.9~141/RELEASE_ARM64_T8112 arm64 arm
+rustc 1.92.0-nightly (f46475914 2025-10-17)
+binary: rustc
+commit-hash: f46475914de626785090a05ae037578aaa119fc8
+commit-date: 2025-10-17
+host: aarch64-apple-darwin
+release: 1.92.0-nightly
+LLVM version: 21.1.3
