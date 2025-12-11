@@ -1,12 +1,12 @@
 Part 1: 484
 Part 2: 19210
-        0.22 real         0.22 user         0.00 sys
-            45514752  maximum resident set size
+        0.21 real         0.20 user         0.00 sys
+            46219264  maximum resident set size
                    0  average shared memory size
                    0  average unshared data size
                    0  average unshared stack size
-                2927  page reclaims
-                  13  page faults
+                2988  page reclaims
+                   0  page faults
                    0  swaps
                    0  block input operations
                    0  block output operations
@@ -14,10 +14,10 @@ Part 2: 19210
                    0  messages received
                    0  signals received
                    0  voluntary context switches
-                  44  involuntary context switches
-          2977524122  instructions retired
-           785296387  cycles elapsed
-            39158168  peak memory footprint
+                  38  involuntary context switches
+          2519615680  instructions retired
+           740610170  cycles elapsed
+            39256472  peak memory footprint
 ------------------------------------------
 Darwin 25.0.0 Darwin Kernel Version 25.0.0: Wed Sep 17 21:38:03 PDT 2025; root:xnu-12377.1.9~141/RELEASE_ARM64_T8112 arm64 arm
 rustc 1.92.0-nightly (f46475914 2025-10-17)

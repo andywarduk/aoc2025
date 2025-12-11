@@ -72,13 +72,14 @@ fn part2(input: &[Machine]) -> u64 {
 }
 
 fn fewest_presses2(target: &[u16], additions: &[Vec<u8>]) -> u64 {
+    // Unroll additions
     let buttons = additions
         .iter()
         .map(|addition| {
-            let mut out_vec = vec![0u8; target.len()];
+            let mut out_vec = vec![false; target.len()];
 
             for &idx in addition {
-                out_vec[idx as usize] += 1;
+                out_vec[idx as usize] = true;
             }
 
             out_vec
@@ -90,23 +91,24 @@ fn fewest_presses2(target: &[u16], additions: &[Vec<u8>]) -> u64 {
     z3::with_z3_config(&cfg, || {
         let optimize = z3::Optimize::new();
 
-        // Create integer variables for each button count
-        let button_vars: Vec<z3::ast::Int> = (0..buttons.len())
+        // Create integer variable for each button count
+        let button_counts: Vec<z3::ast::Int> = (0..buttons.len())
             .map(|i| z3::ast::Int::new_const(i as u32))
             .collect();
 
         // Add constraints: each button count must be non-negative
-        for var in &button_vars {
+        for var in &button_counts {
             optimize.assert(&var.ge(z3::ast::Int::from_i64(0)));
         }
 
-        // Add constraints: sum of (button_count * button_effect) must equal target
-        for (dim, &target_val) in target.iter().enumerate() {
+        // Add constraints: sum of actioning button counts must equal target
+        for (target_idx, &target_val) in target.iter().enumerate() {
             let mut sum = z3::ast::Int::from_i64(0);
 
-            for (button_idx, var) in button_vars.iter().enumerate() {
-                let coeff = z3::ast::Int::from_i64(buttons[button_idx][dim] as i64);
-                sum += var * &coeff;
+            for (button_idx, button_count) in button_counts.iter().enumerate() {
+                if buttons[button_idx][target_idx] {
+                    sum += button_count;
+                }
             }
 
             optimize.assert(&sum.eq(z3::ast::Int::from_i64(target_val as i64)));
@@ -115,7 +117,7 @@ fn fewest_presses2(target: &[u16], additions: &[Vec<u8>]) -> u64 {
         // Minimize the sum of button presses
         let mut total = z3::ast::Int::from_i64(0);
 
-        for var in &button_vars {
+        for var in &button_counts {
             total += var;
         }
 

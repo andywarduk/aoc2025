@@ -7,4 +7,4 @@ edition = "2024"
 
 [dependencies]
 aoc = { path = "../aoc" }
-z3 = "0.19.6"
+z3 = { version = "0.19.6", features = ["gh-release"] }
