@@ -18,13 +18,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn part1(input: &[InputEnt]) -> u64 {
     // Find start
-    let mut beams = HashSet::new();
-
     let (sx, mut y) = find_start(input);
+
+    let mut beams = HashSet::new();
 
     beams.insert(sx);
 
     let mut splits = 0;
+
     y += 1;
 
     while y < input.len() {
@@ -53,9 +54,9 @@ fn part1(input: &[InputEnt]) -> u64 {
 
 fn part2(input: &[InputEnt]) -> u64 {
     // Find start
-    let mut beams = HashMap::new();
-
     let (sx, mut y) = find_start(input);
+
+    let mut beams = HashMap::new();
 
     beams.insert(sx, 1);
 
