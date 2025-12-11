@@ -7,3 +7,4 @@ edition = "2024"
 
 [dependencies]
 aoc = { path = "../aoc" }
+z3 = "0.19.6"

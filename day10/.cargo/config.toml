@@ -1,0 +1,2 @@
+[build]
+rustflags = ["-l", "z3", "-L", "/opt/homebrew/lib"]

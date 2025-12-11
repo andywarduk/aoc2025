@@ -1,7 +1,6 @@
 use std::{
     collections::{HashSet, VecDeque},
     error::Error,
-    ops::Neg,
 };
 
 use aoc::input::parse_input_vec;
@@ -72,12 +71,70 @@ fn part2(input: &[Machine]) -> u64 {
         .sum()
 }
 
-fn fewest_presses2(target: &[u8], additions: &[Vec<u8>]) -> u64 {
-    let mut min_amount = vec![u64::MAX; 256];
+fn fewest_presses2(target: &[u16], additions: &[Vec<u8>]) -> u64 {
+    let buttons = additions
+        .iter()
+        .map(|addition| {
+            let mut out_vec = vec![0u8; target.len()];
 
-    // TODO
+            for &idx in addition {
+                out_vec[idx as usize] += 1;
+            }
 
-    0
+            out_vec
+        })
+        .collect::<Vec<_>>();
+
+    let cfg = z3::Config::new();
+
+    z3::with_z3_config(&cfg, || {
+        let optimize = z3::Optimize::new();
+
+        // Create integer variables for each button count
+        let button_vars: Vec<z3::ast::Int> = (0..buttons.len())
+            .map(|i| z3::ast::Int::new_const(i as u32))
+            .collect();
+
+        // Add constraints: each button count must be non-negative
+        for var in &button_vars {
+            optimize.assert(&var.ge(z3::ast::Int::from_i64(0)));
+        }
+
+        // Add constraints: sum of (button_count * button_effect) must equal target
+        for (dim, &target_val) in target.iter().enumerate() {
+            let mut sum = z3::ast::Int::from_i64(0);
+
+            for (button_idx, var) in button_vars.iter().enumerate() {
+                let coeff = z3::ast::Int::from_i64(buttons[button_idx][dim] as i64);
+                sum += var * &coeff;
+            }
+
+            optimize.assert(&sum.eq(z3::ast::Int::from_i64(target_val as i64)));
+        }
+
+        // Minimize the sum of button presses
+        let mut total = z3::ast::Int::from_i64(0);
+
+        for var in &button_vars {
+            total += var;
+        }
+
+        optimize.minimize(&total);
+
+        match optimize.check(&[]) {
+            z3::SatResult::Sat => {
+                if let Some(model) = optimize.get_model() {
+                    match model.eval(&total, true) {
+                        Some(val) => val.as_u64().unwrap_or(0),
+                        None => 0,
+                    }
+                } else {
+                    0
+                }
+            }
+            _ => 0,
+        }
+    })
 }
 
 // Input parsing
@@ -86,7 +143,7 @@ fn fewest_presses2(target: &[u8], additions: &[Vec<u8>]) -> u64 {
 struct Machine {
     indicators: Vec<bool>,
     schematics: Vec<Vec<u8>>,
-    joltages: Vec<u8>,
+    joltages: Vec<u16>,
 }
 
 fn input_transform(line: &str) -> Machine {
@@ -108,7 +165,7 @@ fn input_transform(line: &str) -> Machine {
         .unwrap()
         .trim_matches(|c| c == '{' || c == '}')
         .split(',')
-        .map(|nstr| nstr.parse::<u8>().unwrap())
+        .map(|nstr| nstr.parse::<u16>().unwrap())
         .collect::<Vec<_>>();
 
     let schematics = iter
