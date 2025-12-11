@@ -1,6 +1,4 @@
-Part 1: 4754955192
-Part 2: 1568849600
-        0.02 real         0.01 user         0.00 sys
+        0.20 real         0.03 user         0.00 sys
              8912896  maximum resident set size
                    0  average shared memory size
                    0  average unshared data size
@@ -14,9 +12,9 @@ Part 2: 1568849600
                    0  messages received
                    0  signals received
                    0  voluntary context switches
-                  21  involuntary context switches
-           209925068  instructions retired
-            51808227  cycles elapsed
+                   8  involuntary context switches
+           250490465  instructions retired
+            65911661  cycles elapsed
              8470864  peak memory footprint
 ------------------------------------------
 Darwin 25.0.0 Darwin Kernel Version 25.0.0: Wed Sep 17 21:38:03 PDT 2025; root:xnu-12377.1.9~141/RELEASE_ARM64_T8112 arm64 arm

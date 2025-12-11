@@ -37,26 +37,26 @@ fn part2(input: &[Coord]) -> u64 {
     areas.sort_by(|a, b| b.2.cmp(&a.2));
 
     for (a, b, area) in areas {
-        let p1 = &input[a];
-        let p2 = &input[b];
+        let r1 = &input[a];
+        let r2 = &input[b];
 
-        let pmin = Coord {
-            x: p1.x.min(p2.x),
-            y: p1.y.min(p2.y),
+        let rmin = Coord {
+            x: r1.x.min(r2.x),
+            y: r1.y.min(r2.y),
         };
 
-        let pmax = Coord {
-            x: p1.x.max(p2.x),
-            y: p1.y.max(p2.y),
+        let rmax = Coord {
+            x: r1.x.max(r2.x),
+            y: r1.y.max(r2.y),
         };
 
-        let mut t1 = input.iter().next_back().unwrap();
+        let mut l1 = input.iter().next_back().unwrap();
 
-        let found = input.iter().find(|t2| {
-            // Check if line segment (t1, t2) intersects rectangle (p1, p2)
-            let intersects = line_segment_intersects_rect(t1, t2, &pmin, &pmax);
+        let found = input.iter().find(|l2| {
+            // Check if line segment (l1, l2) intersects rectangle (rmin, rmax) anywhere except edges
+            let intersects = line_segment_intersects_rect(l1, l2, &rmin, &rmax);
 
-            t1 = t2;
+            l1 = l2;
 
             intersects
         });
@@ -67,6 +67,47 @@ fn part2(input: &[Coord]) -> u64 {
     }
 
     0
+}
+
+// Line segment to rectangle intersection detection
+fn line_segment_intersects_rect(l1: &Coord, l2: &Coord, rmin: &Coord, rmax: &Coord) -> bool {
+    if l1.y == l2.y {
+        // Horizontal line
+        // Does this line potentially intersect on y?
+        if l1.y > rmin.y && l1.y < rmax.y {
+            // Check y intersection
+            let min = l1.x.min(l2.x);
+            let max = l1.x.max(l2.x);
+
+            // Wholly inside, intersect left, or intersect right?
+            if min > rmin.x && max < rmax.x
+                || min < rmin.x && max > rmin.x
+                || min < rmax.x && max > rmax.x
+            {
+                return true;
+            }
+        }
+    } else if l1.x == l2.x {
+        // Vertical line
+        // Does this line potentially intersect on x?
+        if l1.x > rmin.x && l1.x < rmax.x {
+            // Check y intersection
+            let min = l1.y.min(l2.y);
+            let max = l1.y.max(l2.y);
+
+            // Wholly inside, intersect top, or intersect bottom?
+            if min > rmin.y && max < rmax.y
+                || min < rmin.y && max > rmin.y
+                || min < rmax.y && max > rmax.y
+            {
+                return true;
+            }
+        }
+    } else {
+        panic!()
+    }
+
+    false
 }
 
 // Input parsing
@@ -84,70 +125,6 @@ fn input_transform(line: &str) -> Coord {
         x: x.parse::<i64>().unwrap(),
         y: y.parse::<i64>().unwrap(),
     }
-}
-
-// Line segment to rectangle intersection detection
-#[allow(clippy::too_many_arguments)]
-fn line_segment_intersects_rect(t1: &Coord, t2: &Coord, pmin: &Coord, pmax: &Coord) -> bool {
-    // Check if either endpoint is inside the rectangle
-    if (t1.x > pmin.x && t1.x < pmax.x && t1.y > pmin.y && t1.y < pmax.y)
-        || (t2.x > pmin.x && t2.x < pmax.x && t2.y > pmin.y && t2.y < pmax.y)
-    {
-        return true;
-    }
-
-    // Check intersection with rectangle edges using Cohen-Sutherland algorithm
-    let dx = t2.x - t1.x;
-    let dy = t2.y - t1.y;
-
-    // Check intersection with left and right edges
-    if dx != 0 {
-        let t_left = (pmin.x as f64 - t1.x as f64) / dx as f64;
-        let t_right = (pmax.x as f64 - t1.x as f64) / dx as f64;
-
-        for t in [t_left, t_right] {
-            if t > 0.0 && t < 1.0 {
-                let y = t1.y as f64 + t * dy as f64;
-                if y > pmin.y as f64 && y < pmax.y as f64 {
-                    return true;
-                }
-            }
-        }
-    }
-
-    // Check intersection with top and bottom edges
-    if dy != 0 {
-        let t_bottom = (pmin.y as f64 - t1.y as f64) / dy as f64;
-        let t_top = (pmax.y as f64 - t1.y as f64) / dy as f64;
-
-        for t in [t_bottom, t_top] {
-            if t > 0.0 && t < 1.0 {
-                let x = t1.x as f64 + t * dx as f64;
-                if x >= pmin.x as f64 && x <= pmax.x as f64 {
-                    return true;
-                }
-            }
-        }
-    }
-
-    // Check if line is axis-aligned and passes through rectangle
-    if dx == 0 && t1.x > pmin.x && t1.x < pmax.x {
-        let y_min = t1.y.min(t2.y);
-        let y_max = t1.y.max(t2.y);
-        if !(y_max < pmin.y || y_min > pmax.y) {
-            return true;
-        }
-    }
-
-    if dy == 0 && t1.y > pmin.y && t1.y < pmax.y {
-        let x_min = t1.x.min(t2.x);
-        let x_max = t1.x.max(t2.x);
-        if !(x_max < pmin.x || x_min > pmax.x) {
-            return true;
-        }
-    }
-
-    false
 }
 
 #[cfg(test)]
