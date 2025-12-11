@@ -40,18 +40,21 @@ fn part2(input: &[Coord]) -> u64 {
         let p1 = &input[a];
         let p2 = &input[b];
 
-        let pxmin = p1.x.min(p2.x);
-        let pxmax = p1.x.max(p2.x);
+        let pmin = Coord {
+            x: p1.x.min(p2.x),
+            y: p1.y.min(p2.y),
+        };
 
-        let pymin = p1.y.min(p2.y);
-        let pymax = p1.y.max(p2.y);
+        let pmax = Coord {
+            x: p1.x.max(p2.x),
+            y: p1.y.max(p2.y),
+        };
 
         let mut t1 = input.iter().next_back().unwrap();
 
         let found = input.iter().find(|t2| {
             // Check if line segment (t1, t2) intersects rectangle (p1, p2)
-            let intersects =
-                line_segment_intersects_rect(t1.x, t1.y, t2.x, t2.y, pxmin, pymin, pxmax, pymax);
+            let intersects = line_segment_intersects_rect(t1, t2, &pmin, &pmax);
 
             t1 = t2;
 
@@ -68,7 +71,7 @@ fn part2(input: &[Coord]) -> u64 {
 
 // Input parsing
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Coord {
     x: i64,
     y: i64,
@@ -84,36 +87,28 @@ fn input_transform(line: &str) -> Coord {
 }
 
 // Line segment to rectangle intersection detection
-fn line_segment_intersects_rect(
-    x1: i64,
-    y1: i64,
-    x2: i64,
-    y2: i64,
-    rx_min: i64,
-    ry_min: i64,
-    rx_max: i64,
-    ry_max: i64,
-) -> bool {
+#[allow(clippy::too_many_arguments)]
+fn line_segment_intersects_rect(t1: &Coord, t2: &Coord, pmin: &Coord, pmax: &Coord) -> bool {
     // Check if either endpoint is inside the rectangle
-    if (x1 > rx_min && x1 < rx_max && y1 > ry_min && y1 < ry_max)
-        || (x2 > rx_min && x2 < rx_max && y2 > ry_min && y2 < ry_max)
+    if (t1.x > pmin.x && t1.x < pmax.x && t1.y > pmin.y && t1.y < pmax.y)
+        || (t2.x > pmin.x && t2.x < pmax.x && t2.y > pmin.y && t2.y < pmax.y)
     {
         return true;
     }
 
     // Check intersection with rectangle edges using Cohen-Sutherland algorithm
-    let dx = x2 - x1;
-    let dy = y2 - y1;
+    let dx = t2.x - t1.x;
+    let dy = t2.y - t1.y;
 
     // Check intersection with left and right edges
     if dx != 0 {
-        let t_left = (rx_min as f64 - x1 as f64) / dx as f64;
-        let t_right = (rx_max as f64 - x1 as f64) / dx as f64;
+        let t_left = (pmin.x as f64 - t1.x as f64) / dx as f64;
+        let t_right = (pmax.x as f64 - t1.x as f64) / dx as f64;
 
         for t in [t_left, t_right] {
             if t > 0.0 && t < 1.0 {
-                let y = y1 as f64 + t * dy as f64;
-                if y > ry_min as f64 && y < ry_max as f64 {
+                let y = t1.y as f64 + t * dy as f64;
+                if y > pmin.y as f64 && y < pmax.y as f64 {
                     return true;
                 }
             }
@@ -122,13 +117,13 @@ fn line_segment_intersects_rect(
 
     // Check intersection with top and bottom edges
     if dy != 0 {
-        let t_bottom = (ry_min as f64 - y1 as f64) / dy as f64;
-        let t_top = (ry_max as f64 - y1 as f64) / dy as f64;
+        let t_bottom = (pmin.y as f64 - t1.y as f64) / dy as f64;
+        let t_top = (pmax.y as f64 - t1.y as f64) / dy as f64;
 
         for t in [t_bottom, t_top] {
             if t > 0.0 && t < 1.0 {
-                let x = x1 as f64 + t * dx as f64;
-                if x >= rx_min as f64 && x <= rx_max as f64 {
+                let x = t1.x as f64 + t * dx as f64;
+                if x >= pmin.x as f64 && x <= pmax.x as f64 {
                     return true;
                 }
             }
@@ -136,18 +131,18 @@ fn line_segment_intersects_rect(
     }
 
     // Check if line is axis-aligned and passes through rectangle
-    if dx == 0 && x1 > rx_min && x1 < rx_max {
-        let y_min = y1.min(y2);
-        let y_max = y1.max(y2);
-        if !(y_max < ry_min || y_min > ry_max) {
+    if dx == 0 && t1.x > pmin.x && t1.x < pmax.x {
+        let y_min = t1.y.min(t2.y);
+        let y_max = t1.y.max(t2.y);
+        if !(y_max < pmin.y || y_min > pmax.y) {
             return true;
         }
     }
 
-    if dy == 0 && y1 > ry_min && y1 < ry_max {
-        let x_min = x1.min(x2);
-        let x_max = x1.max(x2);
-        if !(x_max < rx_min || x_min > rx_max) {
+    if dy == 0 && t1.y > pmin.y && t1.y < pmax.y {
+        let x_min = t1.x.min(t2.x);
+        let x_max = t1.x.max(t2.x);
+        if !(x_max < pmin.x || x_min > pmax.x) {
             return true;
         }
     }
